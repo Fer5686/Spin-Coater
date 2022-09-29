@@ -1,0 +1,125 @@
+void fsmSpinCoaterError(){
+}
+
+void fsmSpinCoaterUpdate(){
+  switch( spinCoaterState ){
+    case stateIdle:     
+      /* actualizo el LCD */
+      lcdSetIdle();
+      /* chequeo condiciones de salida */
+      while(true){
+        char customKey = customKeypad.getKey();
+        if (customKey){
+          spinCoaterState=stateConfigRPM;
+          break;
+        }
+      }
+    break;
+
+  
+    case stateConfigRPM:{
+      rpmSet=false;
+      int posicion=0;
+      lcdSetConfigRPM();
+      
+      while(true){
+        char customKey = customKeypad.getKey();
+        if (customKey){
+          if (customKey>='0'&&customKey<='9'&&posicion<=3){
+            stringRPM[posicion]=customKey;
+            lcd.print(stringRPM[posicion]);
+            posicion++;
+          }
+          if (customKey=='E'){
+            spinCoaterState=stateConfigTime;
+            while (posicion<=3){
+              stringRPM[posicion]='0'; //en caso de no completar el número se agregan 0 luego de aceptar
+              posicion++;
+            }
+            rpmSet=true;
+            break;
+          }
+          if (customKey=='S'){ //al presionar Esc vuelvo a al modo Idle
+            spinCoaterState=stateIdle;
+            for (posicion=0;posicion<=3;posicion++){
+              stringRPM[posicion]='0';//vacío el string antes de salir
+            }
+            break;
+          }
+        }
+      }
+    }
+    break;
+
+
+    case stateConfigTime:{
+      timeSet=false;
+      int posicion=0;
+      lcd.clear();
+      lcd.setCursor(0,0);
+      lcd.print("Tiempo:");
+      lcd.setCursor(0,1);
+      lcd.print(stringTime[0]);
+      lcd.print(stringTime[1]);
+      lcd.print(":");
+      lcd.print(stringTime[2]);
+      lcd.print(stringTime[3]);
+   
+      while(true){
+        char customKey = customKeypad.getKey();
+        if (customKey){
+          if(customKey>='0'&&customKey<='9'&&posicion==3){
+            stringTime[posicion]=customKey;
+            lcd.setCursor(posicion+1,1);
+            lcd.print(stringTime[posicion]);
+            posicion++;
+          }
+          if(customKey>='0'&&customKey<='5'&&posicion==2){
+          stringTime[posicion]=customKey;
+          lcd.setCursor(posicion+1,1);
+          lcd.print(stringTime[posicion]);
+          posicion++;
+          }
+          if (customKey>='0'&&customKey<='9'&&posicion<=1){
+            stringTime[posicion]=customKey;
+            lcd.print(stringTime[posicion]);
+            posicion++;
+          }
+          if (customKey=='E'){
+            spinCoaterState=stateConfigTime;
+            while (posicion<=3){
+              stringTime[posicion]='0'; //en caso de no completar el número se agregan 0 luego de aceptar
+              posicion++;
+            }
+            rpmSet=true;
+            break;
+          }
+          if (customKey=='S'){
+            for (posicion=0;posicion<=3;posicion++){
+            stringTime[posicion]='0';//vacío el string antes de salir
+            }
+            spinCoaterState=stateConfigRPM;
+            break;
+          }
+        }
+      }
+    }
+    break;
+    
+    
+    case stateWorking:{
+      stateFuncionando();
+    }
+    break;
+    
+    
+    case stateEndTime:{
+      
+    }
+    break;
+  
+    default:
+      fsmSpinCoaterError();
+    break;
+  }
+}

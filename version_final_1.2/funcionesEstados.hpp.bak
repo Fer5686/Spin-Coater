@@ -1,0 +1,65 @@
+void lcdSetIdle(){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("presione cualquier");
+  lcd.setCursor(0,1);
+  lcd.print("boton para empezar");
+}
+
+void lcdSetConfigRPM(){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Velocidad:");
+  lcd.setCursor(10,1);
+  lcd.print("RPM");
+  lcd.setCursor(0,1);
+  lcd.print(stringRPM);
+}
+
+void lcdSetConfigTime(){
+	lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("Tiempo:");
+  lcd.setCursor(0,1);
+  lcd.print(stringTime[0]);
+	lcd.print(stringTime[1]);
+	lcd.print(":");
+	lcd.print(stringTime[2]);
+	lcd.print(stringTime[3]);
+}
+
+void calcularPID(){   
+  pidController.Input = rpm;
+  pidController.Update();
+  DutyPWM = pidController.Output;
+  analogWrite(pinPWM,DutyPWM);
+}
+
+void mostrarRPM(){
+  lcd.setCursor(0,0);
+  rpmPrint=rpm;
+  lcd.print(rpmPrint);
+  lcd.print(" RPM");
+}
+
+void mostrarPWM(){
+  lcd.setCursor(0,1);
+  lcd.print(DutyPWM);
+  lcd.print(" PWM");
+}
+
+void stateFuncionando(){
+  if(millis()-delay1>=2){
+    calcularPID();
+    delay1=millis();
+  }
+  //muestro el valor de los RPM
+  if(millis()-delay2+5>=delayRPM){
+    mostrarRPM();
+    delay2=millis();
+  }
+  if(millis()-delay3>=delayRPM){
+    mostrarPWM();
+    delay3=millis();
+  }
+}
